@@ -261,33 +261,27 @@ Windows-specific wallpaper API.
 
 wallpaper-shuffle/
 
-src/
+paperloop/
 
-components/
-
-views/
-
-stores/
-
-src-tauri/
-
-src/
-
-wallpaper.rs
-
-scanner.rs
-
-scheduler.rs
-
-settings.rs
-
-tray.rs
-
-windows.rs
-
-Cargo.toml
-
-README.md
+├── src/                 # Vue
+│   ├── components/
+│   ├── views/
+│   ├── App.vue
+│   └── main.ts
+│
+├── src-tauri/           # Rust
+│   ├── src/
+│   │   ├── main.rs
+│   │   ├── wallpaper.rs
+│   │   ├── scheduler.rs
+│   │   ├── settings.rs
+│   │   └── tray.rs
+│   │
+│   └── Cargo.toml
+│
+├── package.json
+├── vite.config.ts
+└── README.md
 
 LICENSE
 
