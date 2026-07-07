@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+src-tauri/target/
+
+# Build outputs
+dist/
+dist-electron/
+*.exe
+*.msi
+*.appimage
+*.dmg
+
+# IDE / Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.kilo/
+
+# OS
+Thumbs.db
+.DS_Store
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.*.development
+.env.*.production
+
+# Tauri
+src-tauri/WallpaperShuffle.exe
+src-tauri/gen/
+
+# Rust
+# NOTE: Cargo.lock IS committed for Tauri apps (they are binary applications,
+# not libraries) to ensure reproducible builds. Only Rust *libraries* ignore it.
+src-tauri/**/*.rs.bk
+src-tauri/target/**/deps
+src-tauri/target/**/build
+src-tauri/target/**/*.d
+src-tauri/target/**/*.rlib
+src-tauri/target/**/*.rmeta
+src-tauri/target/**/*.pdb
+src-tauri/target/**/*.exe
+
+# Cache
+.cache/
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# Misc
+*.local
