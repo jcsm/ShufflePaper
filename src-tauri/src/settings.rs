@@ -9,6 +9,12 @@ pub struct AppSettings {
     pub interval_minutes: u32,
     pub mode: String,
     pub autostart: bool,
+    #[serde(default = "default_theme")]
+    pub theme: String,
+}
+
+fn default_theme() -> String {
+    "system".to_string()
 }
 
 impl Default for AppSettings {
@@ -18,6 +24,7 @@ impl Default for AppSettings {
             interval_minutes: 15,
             mode: "Random".into(),
             autostart: false,
+            theme: default_theme(),
         }
     }
 }

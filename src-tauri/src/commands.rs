@@ -73,3 +73,9 @@ pub async fn select_folder(app: AppHandle) -> Result<Option<String>, String> {
     let folder = app.dialog().file().blocking_pick_folder();
     Ok(folder.map(|f| f.to_string()))
 }
+
+#[tauri::command]
+pub fn log_error(msg: String) {
+    println!("FRONTEND ERROR: {}", msg);
+    let _ = std::fs::write("frontend_error.log", msg);
+}
