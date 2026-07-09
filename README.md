@@ -1,4 +1,10 @@
-# Wallpaper Shuffle
+<p align="center">
+  <img src="src-tauri/icons/icon.png" alt="ShufflePaper icon" width="100" />
+</p>
+
+# ShufflePaper
+
+![ShufflePaper screenshot](screenshot.png)
 
 A lightweight, open-source wallpaper rotator for Windows. Automatically changes your desktop background from a local folder at configurable intervals. Zero telemetry, zero ads, zero accounts.
 
