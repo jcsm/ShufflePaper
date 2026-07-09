@@ -21,7 +21,10 @@ pub fn run() {
             commands::get_status,
             commands::next_wallpaper,
             commands::select_folder,
-            commands::log_error
+            commands::log_error,
+            commands::hide_window,
+            commands::resize_window,
+            commands::start_drag
         ])
         .setup(|app| {
             let settings = settings::load_settings(app.handle());

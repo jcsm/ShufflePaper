@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, onErrorCaptured } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { FolderOpen, Save, CheckCircle, RefreshCcw, Sun, Moon } from "lucide-vue-next";
+import { FolderOpen, Save, CheckCircle, RefreshCcw, Sun, Moon, X } from "lucide-vue-next";
 
-onErrorCaptured((err, instance, info) => {
+onErrorCaptured((err, _instance, info) => {
   console.error("Vue Error Captured:", err, info);
   invoke("log_error", { msg: String(err) }).catch(() => {});
 });
@@ -15,6 +15,9 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
   invoke("log_error", { msg: String(event.reason) }).catch(() => {});
 });
+
+// Disable right-click context menu
+window.addEventListener('contextmenu', e => e.preventDefault());
 
 
 interface AppSettings {
@@ -139,6 +142,17 @@ async function nextWallpaper() {
   }
 }
 
+function hideWindow() {
+  invoke("hide_window").catch(console.error);
+}
+
+function startDrag() {
+  invoke("start_drag").catch(console.error);
+}
+
+let resizeObserver: ResizeObserver | null = null;
+const mainElement = ref<HTMLElement | null>(null);
+
 onMounted(async () => {
   await loadSettings();
   await loadStatus();
@@ -148,6 +162,18 @@ onMounted(async () => {
     mediaQuery.addEventListener("change", onSystemThemeChange);
   }
   applyTheme();
+
+  // Auto-resize window
+  resizeObserver = new ResizeObserver(() => {
+    if (mainElement.value) {
+      // Use offsetHeight to get the exact rendered height including borders
+      const height = mainElement.value.offsetHeight;
+      invoke("resize_window", { width: 480, height }).catch(console.error);
+    }
+  });
+  if (mainElement.value) {
+    resizeObserver.observe(mainElement.value);
+  }
 });
 
 onUnmounted(() => {
@@ -156,6 +182,9 @@ onUnmounted(() => {
   }
   if (mediaQuery && mediaQuery.removeEventListener) {
     mediaQuery.removeEventListener("change", onSystemThemeChange);
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect();
   }
 });
 
@@ -171,16 +200,25 @@ const intervalOptions = [
 </script>
 
 <template>
-  <main class="h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 flex flex-col font-sans">
-    <header class="flex items-center justify-between mb-5">
-      <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">ShufflePaper</h1>
-      <button 
-        @click="cycleTheme" 
-        class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        :title="(settings.theme || 'system') === 'system' ? 'System' : (settings.theme || 'system').charAt(0).toUpperCase() + (settings.theme || 'system').slice(1)"
-      >
-        <component :is="effectiveTheme === 'dark' ? Moon : Sun" class="w-5 h-5" />
-      </button>
+  <main ref="mainElement" class="h-fit min-h-min bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 flex flex-col font-sans overflow-hidden border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl">
+    <header @mousedown="startDrag" class="flex items-center justify-between mb-5 cursor-move">
+      <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 pointer-events-none">ShufflePaper</h1>
+      <div class="flex items-center gap-2 z-10" @mousedown.stop>
+        <button 
+          @click="cycleTheme" 
+          class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          :title="!settings?.theme || settings.theme === 'system' ? 'System' : settings.theme.charAt(0).toUpperCase() + settings.theme.slice(1)"
+        >
+          <component :is="effectiveTheme === 'dark' ? Moon : Sun" class="w-5 h-5" />
+        </button>
+        <button 
+          @click="hideWindow" 
+          class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-red-500 hover:text-white transition-colors"
+          title="Close to tray"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
     </header>
     <div class="flex-grow space-y-5">
       
@@ -257,7 +295,7 @@ const intervalOptions = [
     </div>
 
     <!-- Save Button -->
-    <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
+    <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
       <button 
         @click="saveSettings" 
         :disabled="isSaving"

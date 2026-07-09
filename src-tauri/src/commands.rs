@@ -75,6 +75,27 @@ pub async fn select_folder(app: AppHandle) -> Result<Option<String>, String> {
 }
 
 #[tauri::command]
+pub fn start_drag(app: AppHandle) {
+    if let Some(window) = tauri::Manager::get_webview_window(&app, "main") {
+        let _ = window.start_dragging();
+    }
+}
+
+#[tauri::command]
+pub fn resize_window(app: AppHandle, width: f64, height: f64) {
+    if let Some(window) = tauri::Manager::get_webview_window(&app, "main") {
+        let _ = window.set_size(tauri::LogicalSize::new(width, height));
+    }
+}
+
+#[tauri::command]
+pub fn hide_window(app: AppHandle) {
+    if let Some(window) = tauri::Manager::get_webview_window(&app, "main") {
+        let _ = window.hide();
+    }
+}
+
+#[tauri::command]
 pub fn log_error(msg: String) {
     println!("FRONTEND ERROR: {}", msg);
     let _ = std::fs::write("frontend_error.log", msg);
