@@ -6,7 +6,12 @@
 
 ![ShufflePaper screenshot](screenshot.png)
 
-A lightweight, open-source wallpaper rotator for Windows. Automatically changes your desktop background from a local folder at configurable intervals. Zero telemetry, zero ads, zero accounts.
+<p>
+  <a href="https://github.com/jcsm/ShufflePaper/releases/latest">
+    <img src="https://img.shields.io/github/v/release/jcsm/ShufflePaper" alt="Latest Release" />
+  </a>
+  <a href="https://github.com/jcsm/ShufflePaper/releases/latest">Download here</a>
+</p>
 
 ## Features
 
