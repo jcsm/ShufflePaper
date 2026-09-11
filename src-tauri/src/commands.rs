@@ -4,7 +4,7 @@ use tauri_plugin_dialog::DialogExt;
 
 use crate::state::AppState;
 use crate::settings::{AppSettings, save_settings as save_settings_to_disk};
-use crate::scheduler::{force_next_wallpaper, last_change_time};
+use crate::scheduler::{advance_wallpaper, restore_previous_wallpaper};
 use crate::scanner::scan_directories;
 
 #[derive(Serialize)]
@@ -13,6 +13,7 @@ pub struct AppStatus {
     pub total_images: usize,
     pub is_paused: bool,
     pub time_remaining: u64,
+    pub can_previous: bool,
 }
 
 #[tauri::command]
@@ -22,7 +23,16 @@ pub fn get_settings(state: State<'_, AppState>) -> AppSettings {
 
 #[tauri::command]
 pub fn save_settings(app: AppHandle, state: State<'_, AppState>, new_settings: AppSettings) -> Result<(), String> {
-    *state.settings.lock().unwrap() = new_settings.clone();
+    {
+        let mut settings = state.settings.lock().unwrap();
+        if settings.folder_path != new_settings.folder_path {
+            // History, redo, and the shuffle bag all point into the old folder.
+            state.history.lock().unwrap().clear();
+            state.redo.lock().unwrap().clear();
+            state.shuffle_bag.lock().unwrap().clear();
+        }
+        *settings = new_settings.clone();
+    }
     
     use tauri_plugin_autostart::ManagerExt;
     let autolaunch = app.autolaunch();
@@ -40,6 +50,7 @@ pub fn get_status(state: State<'_, AppState>) -> AppStatus {
     let settings = state.settings.lock().unwrap().clone();
     let is_paused = *state.is_paused.lock().unwrap();
     let current_image = state.current_image.lock().unwrap().clone();
+    let can_previous = !state.history.lock().unwrap().is_empty();
     
     let total_images = if settings.folder_path.is_empty() {
         0
@@ -50,7 +61,7 @@ pub fn get_status(state: State<'_, AppState>) -> AppStatus {
     let time_remaining = if is_paused {
         0
     } else {
-        let elapsed = last_change_time().elapsed().as_secs();
+        let elapsed = state.last_change.lock().unwrap().elapsed().as_secs();
         let interval = (settings.interval_minutes as u64) * 60;
         interval.saturating_sub(elapsed)
     };
@@ -60,12 +71,18 @@ pub fn get_status(state: State<'_, AppState>) -> AppStatus {
         total_images,
         is_paused,
         time_remaining,
+        can_previous,
     }
 }
 
 #[tauri::command]
 pub fn next_wallpaper(app: AppHandle) {
-    force_next_wallpaper(&app);
+    advance_wallpaper(&app, true);
+}
+
+#[tauri::command]
+pub fn previous_wallpaper(app: AppHandle) {
+    restore_previous_wallpaper(&app);
 }
 
 #[tauri::command]

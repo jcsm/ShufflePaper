@@ -18,7 +18,8 @@
 - Select a folder of wallpapers
 - Configurable rotation intervals (1 minute to 24 hours)
 - Shuffle or Sequential rotation mode
-- Next / Previous manual controls
+- Shuffle mode never repeats an image until all have been shown once (Windows' built-in slideshow can't do this)
+- Next / Previous manual controls with undo history (also in the tray menu)
 - Start with Windows (togglable)
 - Lives in the system tray with quick menu
 - Privacy-friendly: no network, no telemetry

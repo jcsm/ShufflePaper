@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, onErrorCaptured } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { FolderOpen, Save, CheckCircle, RefreshCcw, Sun, Moon, X } from "lucide-vue-next";
+import { FolderOpen, Save, CheckCircle, Undo2, Redo2, Sun, Moon, X } from "lucide-vue-next";
 
 onErrorCaptured((err, _instance, info) => {
   console.error("Vue Error Captured:", err, info);
@@ -33,6 +33,7 @@ interface AppStatus {
   total_images: number;
   is_paused: boolean;
   time_remaining: number;
+  can_previous: boolean;
 }
 
 const settings = ref<AppSettings>({
@@ -48,6 +49,7 @@ const status = ref<AppStatus>({
   total_images: 0,
   is_paused: false,
   time_remaining: 0,
+  can_previous: false,
 });
 
 const isSaving = ref(false);
@@ -139,6 +141,15 @@ async function nextWallpaper() {
     await loadStatus();
   } catch (error) {
     console.error("Failed to change wallpaper:", error);
+  }
+}
+
+async function previousWallpaper() {
+  try {
+    await invoke("previous_wallpaper");
+    await loadStatus();
+  } catch (error) {
+    console.error("Failed to restore previous wallpaper:", error);
   }
 }
 
@@ -287,9 +298,22 @@ const intervalOptions = [
             <span class="text-green-600 dark:text-green-400 font-medium" v-else>Active</span>
           </p>
         </div>
-        <button @click="nextWallpaper" class="mt-4 w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
-          <RefreshCcw class="w-4 h-4" /> Skip to Next
-        </button>
+        <div class="mt-4 flex gap-2">
+          <button
+            @click="previousWallpaper"
+            :disabled="!status.can_previous"
+            class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2 text-sm font-medium transition-colors enabled:hover:bg-gray-100 dark:enabled:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Go back to the previous wallpaper"
+          >
+            <Undo2 class="w-4 h-4" /> Previous
+          </button>
+          <button
+            @click="nextWallpaper"
+            class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+          >
+            <Redo2 class="w-4 h-4" /> Skip to Next
+          </button>
+        </div>
       </section>
 
     </div>

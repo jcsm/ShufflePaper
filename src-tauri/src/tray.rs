@@ -4,15 +4,16 @@ use tauri::{
     AppHandle, Manager,
 };
 use crate::state::AppState;
-use crate::scheduler::force_next_wallpaper;
+use crate::scheduler::{advance_wallpaper, restore_previous_wallpaper};
 
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let prev_i = MenuItem::with_id(app, "previous", "Previous Wallpaper", true, None::<&str>)?;
     let next_i = MenuItem::with_id(app, "next", "Next Wallpaper", true, None::<&str>)?;
     let toggle_i = MenuItem::with_id(app, "toggle", "Pause/Resume", true, None::<&str>)?;
     let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
-    let menu = Menu::with_items(app, &[&next_i, &toggle_i, &settings_i, &quit_i])?;
+    let menu = Menu::with_items(app, &[&prev_i, &next_i, &toggle_i, &settings_i, &quit_i])?;
 
     let icon = app.default_window_icon().cloned();
     let _tray = if let Some(icon) = icon {
@@ -21,8 +22,11 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
             .menu(&menu)
             .show_menu_on_left_click(false)
             .on_menu_event(|app, event| match event.id.as_ref() {
+                "previous" => {
+                    restore_previous_wallpaper(app);
+                }
                 "next" => {
-                    force_next_wallpaper(app);
+                    advance_wallpaper(app, true);
                 }
                 "toggle" => {
                     let state = app.state::<AppState>();

@@ -7,6 +7,7 @@ mod tray;
 mod commands;
 
 use std::sync::Mutex;
+use std::time::Instant;
 use tauri::Manager;
 use state::AppState;
 
@@ -20,6 +21,7 @@ pub fn run() {
             commands::save_settings,
             commands::get_status,
             commands::next_wallpaper,
+            commands::previous_wallpaper,
             commands::select_folder,
             commands::log_error,
             commands::hide_window,
@@ -33,6 +35,10 @@ pub fn run() {
                 settings: Mutex::new(settings),
                 current_image: Mutex::new(None),
                 is_paused: Mutex::new(false),
+                history: Mutex::new(Vec::new()),
+                redo: Mutex::new(Vec::new()),
+                shuffle_bag: Mutex::new(Vec::new()),
+                last_change: Mutex::new(Instant::now()),
             });
 
             tray::create_tray(app.handle()).expect("Failed to create tray");
