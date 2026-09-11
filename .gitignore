@@ -16,6 +16,7 @@ dist-electron/
 !.vscode/settings.json
 .idea/
 .kilo/
+.freebuff
 
 # OS
 Thumbs.db

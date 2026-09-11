@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShufflePaper · Keep your desktop fresh</title>
+  <meta name="description" content="ShufflePaper is a free, open-source Windows app that rotates your desktop wallpaper from your own folder — on a timer, shuffled or in order. No internet, no telemetry." />
+  <link rel="icon" type="image/png" href="./icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0f1e;
+      --bg-soft: #0e1424;
+      --panel: #121a2e;
+      --panel-2: #16203a;
+      --line: #223054;
+      --line-soft: #1b2745;
+      --blue: #3d97e8;
+      --blue-soft: #6db4f0;
+      --blue-dim: #2b6cb8;
+      --sun: #fdd879;
+      --coral: #fb8758;
+      --rose: #a72557;
+      --ink: #eef2fb;
+      --ink-2: #aab6d4;
+      --ink-3: #7482a8;
+      --container: 1060px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      background-image: radial-gradient(rgba(154, 176, 224, 0.07) 1px, transparent 1px);
+      background-size: 26px 26px;
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
+
+    a { color: var(--blue-soft); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    section[id] { scroll-margin-top: 84px; }
+
+    /* ---------- Sticky header ---------- */
+    header.site {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 15, 30, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-row img { width: 28px; height: 28px; }
+    a.brand-row { color: var(--ink); }
+    a.brand-row:hover { text-decoration: none; }
+
+    nav.links { display: flex; align-items: center; gap: 28px; }
+
+    nav.links a {
+      color: var(--ink-2);
+      font-size: 14.5px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    nav.links a:hover { color: var(--ink); text-decoration: none; }
+
+    nav.links a.cta {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue-dim), var(--blue));
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      box-shadow: 0 2px 12px rgba(61, 151, 232, 0.35);
+    }
+
+    nav.links a.cta:hover {
+      background: linear-gradient(135deg, var(--blue), var(--blue-soft));
+      color: #fff;
+    }
+
+    /* ---------- Hero (galaxy) ---------- */
+    .hero {
+      position: relative;
+      padding: 96px 0 110px;
+      overflow: hidden;
+    }
+
+    /* Sky backdrop: night navy up top, icon blue mid, coral+sun dawn glow low */
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 900px 500px at 50% 100%, rgba(251, 135, 88, 0.20), transparent 65%),
+        radial-gradient(ellipse 1300px 700px at 50% 92%, rgba(253, 216, 121, 0.12), transparent 70%),
+        radial-gradient(ellipse 1100px 640px at 50% 30%, rgba(29, 90, 164, 0.5), transparent 72%),
+        linear-gradient(180deg, #05070f 0%, #0d1228 46%, #1d5aa4 130%);
+      z-index: -2;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 8% 18%, rgba(255,255,255,0.5), transparent 100%),
+        radial-gradient(1px 1px at 22% 38%, rgba(255,255,255,0.32), transparent 100%),
+        radial-gradient(1.5px 1.5px at 36% 12%, rgba(255,255,255,0.42), transparent 100%),
+        radial-gradient(1px 1px at 52% 30%, rgba(255,255,255,0.3), transparent 100%),
+        radial-gradient(1.5px 1.5px at 64% 15%, rgba(255,255,255,0.46), transparent 100%),
+        radial-gradient(1px 1px at 78% 35%, rgba(255,255,255,0.3), transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 20%, rgba(255,255,255,0.44), transparent 100%),
+        radial-gradient(1px 1px at 44% 50%, rgba(255,255,255,0.22), transparent 100%),
+        radial-gradient(1.5px 1.5px at 14% 55%, rgba(255,255,255,0.26), transparent 100%),
+        radial-gradient(1px 1px at 84% 52%, rgba(255,255,255,0.24), transparent 100%);
+      z-index: -1;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 56px;
+      align-items: center;
+      position: relative;
+    }
+
+    .badges {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+
+    .badge {
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--blue-soft);
+      background: rgba(32, 105, 189, 0.16);
+      border: 1px solid rgba(109, 180, 240, 0.3);
+      padding: 6px 13px;
+      border-radius: 999px;
+    }
+
+    .hero h1 {
+      font-size: clamp(38px, 5.4vw, 56px);
+      line-height: 1.08;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 22px;
+    }
+
+    .hero .sub {
+      color: var(--ink-2);
+      font-size: 16.5px;
+      max-width: 46ch;
+      margin-bottom: 34px;
+    }
+
+    .btn-store {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      background: #ffffff;
+      color: #10162b;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.2;
+      padding: 12px 22px;
+      border-radius: 12px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 8px 30px -10px rgba(109, 180, 240, 0.45);
+    }
+
+    .btn-store:hover {
+      text-decoration: none;
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px -10px rgba(109, 180, 240, 0.6);
+    }
+
+    .btn-store svg { width: 30px; height: 30px; flex: 0 0 auto; }
+    .btn-store .small { display: block; font-size: 11.5px; font-weight: 500; color: #5b6580; }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px;
+      margin-top: 22px;
+      font-size: 13px;
+      color: rgba(170, 182, 212, 0.85);
+    }
+
+    .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+    .hero-meta svg { width: 14px; height: 14px; stroke: var(--ink-2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .hero-meta a { color: var(--blue-soft); font-weight: 600; }
+
+    /* Hero visual */
+    .hero-visual { position: relative; }
+
+    .shot-frame {
+      position: relative;
+      width: min(340px, 100%);
+      margin: 0 auto;
+      border-radius: 18px;
+      border: 1px solid rgba(109, 180, 240, 0.25);
+      box-shadow:
+        0 40px 90px -30px rgba(0, 0, 0, 0.8),
+        0 0 80px -10px rgba(61, 151, 232, 0.45);
+      overflow: hidden;
+      background: var(--panel);
+    }
+
+    .shot-frame img { display: block; width: 100%; height: auto; }
+
+    /* ---------- Sections ---------- */
+    .band { padding: 100px 0; border-top: 1px solid var(--line-soft); }
+
+    .band h2 {
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .band-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 44px;
+    }
+
+    .band-head p { color: var(--ink-2); font-size: 16px; margin-top: 8px; max-width: 60ch; }
+
+    /* Modes */
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 22px;
+    }
+
+    .mode {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      grid-template-rows: auto auto 1fr;
+      column-gap: 18px;
+    }
+
+    .mode .micon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      grid-row: 1;
+    }
+
+    .mode .micon svg { width: 22px; height: 22px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .mode.shuffle .micon { background: rgba(251, 135, 88, 0.12); border: 1px solid rgba(251, 135, 88, 0.35); }
+    .mode.shuffle .micon svg { stroke: var(--coral); }
+    .mode.seq .micon { background: rgba(61, 151, 232, 0.12); border: 1px solid rgba(61, 151, 232, 0.35); }
+    .mode.seq .micon svg { stroke: var(--blue); }
+
+    .mode .mtag {
+      justify-self: end;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding-top: 4px;
+    }
+
+    .mode h3 { grid-column: 2; font-size: 19px; font-weight: 700; margin: 16px 0 8px; }
+    .mode p { grid-column: 2; color: var(--ink-2); font-size: 14.5px; }
+
+    /* Features: unified grid with dividers */
+    .features-grid {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .feature {
+      padding: 30px 28px;
+      border-right: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .feature:nth-child(3n) { border-right: none; }
+    .feature:nth-child(n+4) { border-bottom: none; }
+
+    .feature .ficon { margin-bottom: 16px; }
+    .feature .ficon svg { width: 26px; height: 26px; stroke: var(--blue); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .feature h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 7px; }
+    .feature p { color: var(--ink-2); font-size: 14px; }
+
+    /* Privacy band (from v1) */
+    .privacy {
+      background:
+        radial-gradient(ellipse 800px 400px at 50% 0%, rgba(29, 90, 164, 0.35), transparent 70%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
+      text-align: center;
+    }
+
+    .privacy .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--sun);
+      background: rgba(244, 166, 55, 0.09);
+      border: 1px solid rgba(244, 166, 55, 0.3);
+      padding: 9px 18px;
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+
+    .privacy .pill svg { width: 18px; height: 18px; stroke: var(--sun); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .privacy h2 { margin-bottom: 12px; }
+    .privacy p { color: var(--ink-2); max-width: 62ch; margin: 0 auto; font-size: 16.5px; }
+
+    /* CTA */
+    .cta-card {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 24px;
+      padding: 84px 32px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-card h2 { font-size: clamp(28px, 4.4vw, 40px); margin-bottom: 10px; }
+    .cta-card p { color: var(--ink-2); margin-bottom: 32px; font-size: 15.5px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--line-soft); padding: 40px 0 34px; }
+
+    .foot-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .foot-links { display: flex; flex-wrap: wrap; gap: 24px; font-size: 14px; font-weight: 600; }
+    .foot-links a { color: var(--ink-2); }
+    .foot-links a:hover { color: var(--ink); }
+
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--line-soft);
+      padding-top: 22px;
+      font-size: 13px;
+      color: var(--ink-3);
+    }
+
+    @media (max-width: 900px) {
+      nav.links a:not(.cta) { display: none; }
+      .hero { padding: 72px 0 80px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 64px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature { border-right: none !important; border-bottom: 1px solid var(--line-soft) !important; }
+      .feature:last-child { border-bottom: none !important; }
+      .band { padding: 72px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site">
+    <div class="container nav">
+      <a class="brand-row" href="#">
+        <img src="./icon.png" alt="" /> ShufflePaper
+      </a>
+      <nav class="links">
+        <a href="#modes">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="https://github.com/jcsm/ShufflePaper">GitHub</a>
+        <a class="cta" href="#download">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ Hero ============ -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="badges">
+            <span class="badge">Free &amp; open source</span>
+            <span class="badge">Windows 10 / 11</span>
+          </div>
+          <h1>Keep your desktop fresh.<br />Without touching anything.</h1>
+          <p class="sub">
+            ShufflePaper rotates your Windows wallpaper on a schedule, pulling straight from a
+            folder you choose — shuffled or in order. No accounts, no internet, no nonsense.
+          </p>
+          <a class="btn-store" href="https://github.com/jcsm/ShufflePaper/releases/latest">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            <span>Download for Windows<span class="small">Latest release on GitHub</span></span>
+          </a>
+          <div class="hero-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> v0.1.0</span>
+            <span><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/></svg> Tauri 2 · Rust</span>
+            <span><a href="https://github.com/jcsm/ShufflePaper">Open source</a></span>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="shot-frame">
+            <img src="./screenshot.png" alt="ShufflePaper app window" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Modes ============ -->
+    <section class="band" id="modes">
+      <div class="container">
+        <h2>One folder, two ways to rotate</h2>
+        <div class="modes" style="margin-top: 40px;">
+          <div class="mode shuffle">
+            <div class="micon">
+              <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+            </div>
+            <span class="mtag">Mode 1</span>
+            <h3>Shuffle</h3>
+            <p>
+              Every rotation brings a random pick from your collection. Great for big wallpaper
+              folders where you never want the same picture twice in a row.
+            </p>
+          </div>
+          <div class="mode seq">
+            <div class="micon">
+              <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            </div>
+            <span class="mtag">Mode 2</span>
+            <h3>Sequential</h3>
+            <p>
+              Walks through your folder in order, one image at a time. Ideal for curated packs,
+              photo trips, or collections with a story to tell.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Features ============ -->
+    <section class="band" id="features">
+      <div class="container">
+        <div class="band-head">
+          <div>
+            <h2>Features</h2>
+            <p>Everything you need from a wallpaper rotator — and nothing you don't.</p>
+          </div>
+        </div>
+        <div class="features-grid">
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+            <h3>Flexible interval</h3>
+            <p>Set the rotation cadence anywhere from 1 minute to 24 hours. Your desktop, your pace.</p>
+          </div>
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></div>
+            <h3>Shuffle or sequential</h3>
+            <p>Random surprise or ordered walk-through. Switch modes any time with one click.</p>
+          </div>
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+            <h3>Manual skip &amp; pause</h3>
+            <p>Not feeling today's pick? Skip to the next wallpaper instantly, or pause and keep it.</p>
+          </div>
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 10l2 2 4-4"/></svg></div>
+            <h3>Start with Windows</h3>
+            <p>Toggle autostart on and rotation begins at boot — no clicks needed after that.</p>
+          </div>
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+            <h3>Runs in the tray</h3>
+            <p>Close the window and it keeps going in the background, with a quick tray menu.</p>
+          </div>
+          <div class="feature">
+            <div class="ficon"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></div>
+            <h3>Private by design</h3>
+            <p>No network access, no telemetry. Your photos never leave your machine.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Privacy ============ -->
+    <section id="privacy" class="band privacy">
+      <div class="container">
+        <span class="pill">
+          <svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg>
+          Privacy-friendly: no network, no telemetry
+        </span>
+        <h2>Your photos stay yours.</h2>
+        <p>
+          ShufflePaper works entirely offline. It reads images from the folder you pick and sets
+          your wallpaper — that's all. Nothing is uploaded, nothing is tracked, and the settings
+          file lives on your own disk.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="band" id="download">
+      <div class="container">
+        <div class="cta-card">
+          <h2>Stop staring at the same desktop.</h2>
+          <p>Get ShufflePaper for Windows · v0.1.0</p>
+          <a class="btn-store" href="https://github.com/jcsm/ShufflePaper/releases/latest">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            <span>Download for Windows<span class="small">Latest release on GitHub</span></span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="foot-top">
+        <div class="brand-row" style="margin: 0;">
+          <img src="./icon.png" alt="" /> ShufflePaper
+        </div>
+        <nav class="foot-links">
+          <a href="#features">Features</a>
+          <a href="#privacy">Privacy</a>
+          <a href="https://github.com/jcsm/ShufflePaper/releases">Change log</a>
+          <a href="https://github.com/jcsm/ShufflePaper">GitHub</a>
+        </nav>
+      </div>
+      <div class="foot-bottom">
+        <span>© <span id="year">2026</span> ShufflePaper</span>
+        <span>Free and open source, for Windows 10/11.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>

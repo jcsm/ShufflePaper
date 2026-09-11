@@ -40,8 +40,8 @@
 ## Installation
 
 ```powershell
-git clone <repo-url>
-cd WallpaperShuffle
+git clone https://github.com/jcsm/ShufflePaper.git
+cd ShufflePaper
 npm install
 ```
 
@@ -73,7 +73,7 @@ The installer / executable will be generated in `src-tauri/target/release/`.
 ## Project Structure
 
 ```
-wallpaper-shuffle/
+ShufflePaper/
 ├── src-tauri/
 │   └── src/
 │       ├── commands.rs   # Tauri IPC commands
