@@ -70,10 +70,29 @@ The installer / executable will be generated in `src-tauri/target/release/`.
 1. Click **Browse** to select a folder containing wallpapers (jpg, jpeg, png, bmp, webp).
 2. Choose a rotation interval from the dropdown.
 3. Select **Shuffle** or **Sequential** mode.
-4. Configure optional fullscreen pause and Work / Personal context rules.
-5. Enable **Start with Windows** if you want the app to launch on boot.
-6. Click **Save Configuration**.
-7. Use the system tray icon for quick access: Next Wallpaper, Pause / Resume, profile override, Settings, Exit.
+4. Optionally enable **Pause on fullscreen apps** to stop automatic rotations while Windows detects a fullscreen game, video, presentation, or other busy fullscreen activity.
+5. Optionally enable **Context rules** to use separate wallpaper folders for Work and Personal profiles.
+6. Enable **Start with Windows** if you want the app to launch on boot.
+7. Click **Save Configuration**.
+8. Use the system tray icon for quick access: Next Wallpaper, Previous Wallpaper, Pause / Resume, profile override, Settings, and Exit.
+
+### Context rules
+
+When **Context rules** is enabled, ShufflePaper selects the wallpaper folder based on the current profile:
+
+- During selected work days and working hours, wallpapers are selected from the **Work folder**.
+- Outside working hours and on non-working days, wallpapers are selected from the **Personal folder**.
+- Work days default to Monday through Friday.
+- Working hours default to 09:00–18:00.
+- The **Mode** selector supports `Automatic`, `Force Work`, and `Force Personal`.
+- A forced profile remains active until `Automatic` is selected again, regardless of the schedule.
+- If a profile folder is not configured, ShufflePaper falls back to the main **Wallpaper Folder** so the existing single-folder workflow continues to work.
+
+The active profile is shown in the **Status** panel. The same profile override is available from the system tray under **Profile**.
+
+### Fullscreen pause
+
+When **Pause on fullscreen apps** is enabled, ShufflePaper uses Windows notification-state detection rather than window-size comparisons. If Windows reports a fullscreen Direct3D game, presentation mode, or busy fullscreen activity, the current rotation tick is skipped without queuing a pending wallpaper change. Rotation resumes on the next normal interval after fullscreen activity ends.
 
 ## Project Structure
 
@@ -85,6 +104,8 @@ ShufflePaper/
 │       ├── main.rs
 │       ├── lib.rs
 │       ├── scheduler.rs  # Background rotation loop
+│       ├── context.rs    # Work / Personal profile selection
+│       ├── fullscreen.rs # Windows fullscreen-state detection
 │       ├── scanner.rs    # Folder image scanner
 │       ├── settings.rs   # Config load / save
 │       ├── tray.rs       # System tray menu
