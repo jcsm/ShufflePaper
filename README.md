@@ -78,6 +78,8 @@ The installer / executable will be generated in `src-tauri/target/release/`.
 
 ### Context rules
 
+![ShufflePaper context rules](screenshot_context_rules.png)
+
 When **Context rules** is enabled, ShufflePaper selects the wallpaper folder based on the current profile:
 
 - During selected work days and working hours, wallpapers are selected from the **Work folder**.
