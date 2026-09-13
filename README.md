@@ -21,6 +21,9 @@
 - Shuffle mode never repeats an image until all have been shown once (Windows' built-in slideshow can't do this)
 - Next / Previous manual controls with undo history (also in the tray menu)
 - Start with Windows (togglable)
+- Smart fullscreen pause for games, videos, and presentations
+- Work / Personal context profiles with schedules and tray overrides
+- Fixed-height settings window with internal scrolling
 - Lives in the system tray with quick menu
 - Privacy-friendly: no network, no telemetry
 
@@ -35,7 +38,7 @@
 
 - **Frontend**: Vue 3, TypeScript, Vite, Tailwind CSS
 - **Backend**: Tauri v2, Rust
-- **Rust crates**: `windows`, `serde`, `serde_json`, `rand`
+- **Rust crates**: `windows`, `serde`, `serde_json`, `rand`, `chrono`
 - **Tauri plugins**: `tauri-plugin-dialog`, `tauri-plugin-autostart`
 
 ## Installation
@@ -67,9 +70,10 @@ The installer / executable will be generated in `src-tauri/target/release/`.
 1. Click **Browse** to select a folder containing wallpapers (jpg, jpeg, png, bmp, webp).
 2. Choose a rotation interval from the dropdown.
 3. Select **Shuffle** or **Sequential** mode.
-4. Enable **Start with Windows** if you want the app to launch on boot.
-5. Click **Save**.
-6. Use the system tray icon for quick access: Next Wallpaper, Pause / Resume, Settings, Exit.
+4. Configure optional fullscreen pause and Work / Personal context rules.
+5. Enable **Start with Windows** if you want the app to launch on boot.
+6. Click **Save Configuration**.
+7. Use the system tray icon for quick access: Next Wallpaper, Pause / Resume, profile override, Settings, Exit.
 
 ## Project Structure
 

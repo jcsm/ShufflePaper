@@ -1,21 +1,26 @@
+mod commands;
+mod context;
+mod fullscreen;
+mod scanner;
+mod scheduler;
 mod settings;
 mod state;
-mod scanner;
-mod wallpaper;
-mod scheduler;
 mod tray;
-mod commands;
+mod wallpaper;
 
+use state::AppState;
 use std::sync::Mutex;
 use std::time::Instant;
 use tauri::Manager;
-use state::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--autostart"])))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--autostart"]),
+        ))
         .invoke_handler(tauri::generate_handler![
             commands::get_settings,
             commands::save_settings,
@@ -26,15 +31,17 @@ pub fn run() {
             commands::log_error,
             commands::hide_window,
             commands::resize_window,
-            commands::start_drag
+            commands::start_drag,
+            commands::set_force_mode,
         ])
         .setup(|app| {
             let settings = settings::load_settings(app.handle());
-            
+
             app.manage(AppState {
                 settings: Mutex::new(settings),
                 current_image: Mutex::new(None),
                 is_paused: Mutex::new(false),
+                is_fullscreen_paused: Mutex::new(false),
                 history: Mutex::new(Vec::new()),
                 redo: Mutex::new(Vec::new()),
                 shuffle_bag: Mutex::new(Vec::new()),

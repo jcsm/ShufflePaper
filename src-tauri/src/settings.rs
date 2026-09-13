@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
+
+use crate::context::Profile;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
@@ -11,10 +13,38 @@ pub struct AppSettings {
     pub autostart: bool,
     #[serde(default = "default_theme")]
     pub theme: String,
+    #[serde(default = "default_true")]
+    pub pause_on_fullscreen: bool,
+    #[serde(default)]
+    pub context_rules_enabled: bool,
+    #[serde(default)]
+    pub work_folder: Option<PathBuf>,
+    #[serde(default)]
+    pub personal_folder: Option<PathBuf>,
+    #[serde(default = "default_work_days")]
+    pub work_days: [bool; 7],
+    #[serde(default = "default_work_start")]
+    pub work_start_hour: u8,
+    #[serde(default = "default_work_end")]
+    pub work_end_hour: u8,
+    #[serde(default)]
+    pub force_mode: Option<Profile>,
 }
 
 fn default_theme() -> String {
     "system".to_string()
+}
+fn default_true() -> bool {
+    true
+}
+fn default_work_days() -> [bool; 7] {
+    [true, true, true, true, true, false, false]
+}
+fn default_work_start() -> u8 {
+    9
+}
+fn default_work_end() -> u8 {
+    18
 }
 
 impl Default for AppSettings {
@@ -25,6 +55,14 @@ impl Default for AppSettings {
             mode: "Random".into(),
             autostart: false,
             theme: default_theme(),
+            pause_on_fullscreen: true,
+            context_rules_enabled: false,
+            work_folder: None,
+            personal_folder: None,
+            work_days: default_work_days(),
+            work_start_hour: default_work_start(),
+            work_end_hour: default_work_end(),
+            force_mode: None,
         }
     }
 }
