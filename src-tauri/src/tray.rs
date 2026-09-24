@@ -1,11 +1,28 @@
 use crate::context::Profile;
+use crate::logging;
 use crate::scheduler::{advance_wallpaper, restore_previous_wallpaper};
-use crate::state::AppState;
+use crate::state::{lock, AppState};
+use std::thread;
 use tauri::{
     menu::{Menu, MenuItem, Submenu},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
+
+/// Run a wallpaper action on a worker thread.
+///
+/// Tray and menu callbacks are delivered on the Tauri main thread. Applying a
+/// wallpaper there used to broadcast a blocking system message from the UI
+/// thread itself, which left the window unresponsive and the wallpaper
+/// unchanged until the app was restarted.
+fn run_off_main_thread(name: &str, task: impl FnOnce() + Send + 'static) {
+    if let Err(err) = thread::Builder::new()
+        .name(format!("shufflepaper-{name}"))
+        .spawn(task)
+    {
+        logging::error(format!("could not spawn {name} task: {err}"));
+    }
+}
 
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let prev_i = MenuItem::with_id(app, "previous", "Previous Wallpaper", true, None::<&str>)?;
@@ -38,12 +55,27 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
             .menu(&menu)
             .show_menu_on_left_click(false)
             .on_menu_event(|app, event| match event.id.as_ref() {
-                "previous" => restore_previous_wallpaper(app),
-                "next" => advance_wallpaper(app, true),
+                "previous" => {
+                    let app = app.clone();
+                    run_off_main_thread("previous", move || {
+                        restore_previous_wallpaper(&app);
+                    });
+                }
+                "next" => {
+                    let app = app.clone();
+                    run_off_main_thread("next", move || {
+                        advance_wallpaper(&app, true);
+                    });
+                }
                 "toggle" => {
                     let state = app.state::<AppState>();
-                    let mut paused = state.is_paused.lock().unwrap();
+                    let mut paused = lock(&state.is_paused);
                     *paused = !*paused;
+                    logging::info(if *paused {
+                        "rotation paused from tray"
+                    } else {
+                        "rotation resumed from tray"
+                    });
                 }
                 "force_work" => {
                     let _ = set_force_mode(app, Some(Profile::Work));
@@ -60,7 +92,10 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                         let _ = window.set_focus();
                     }
                 }
-                "quit" => app.exit(0),
+                "quit" => {
+                    logging::info("exit requested from tray");
+                    app.exit(0);
+                }
                 _ => {}
             })
             .on_tray_icon_event(|tray, event| {
@@ -87,12 +122,17 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 fn set_force_mode(app: &AppHandle, mode: Option<Profile>) -> Result<(), String> {
     let state = app.state::<AppState>();
     let settings = {
-        let mut settings = state.settings.lock().unwrap();
+        let mut settings = lock(&state.settings);
         settings.force_mode = mode;
         settings.clone()
     };
-    state.history.lock().unwrap().clear();
-    state.redo.lock().unwrap().clear();
-    state.shuffle_bag.lock().unwrap().clear();
+    lock(&state.history).clear();
+    lock(&state.redo).clear();
+    lock(&state.shuffle_bag).clear();
+    lock(&state.failed_images).clear();
+    logging::info(format!(
+        "profile override: {}",
+        crate::context::profile_label(mode)
+    ));
     crate::settings::save_settings(app, &settings)
 }

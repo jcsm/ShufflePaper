@@ -19,6 +19,7 @@
 - Configurable rotation intervals (1 minute to 24 hours)
 - Shuffle or Sequential rotation mode
 - Shuffle mode never repeats an image until all have been shown once (Windows' built-in slideshow can't do this)
+- **SVG wallpaper support** — SVG files are rasterized to a screen-resolution PNG and cached, including embedded CSS styling and system-font text (animations are not supported; see below)
 - Next / Previous manual controls with undo history (also in the tray menu)
 - Start with Windows (togglable)
 - Smart fullscreen pause for games, videos, and presentations
@@ -38,7 +39,7 @@
 
 - **Frontend**: Vue 3, TypeScript, Vite, Tailwind CSS
 - **Backend**: Tauri v2, Rust
-- **Rust crates**: `windows`, `serde`, `serde_json`, `rand`, `chrono`
+- **Rust crates**: `windows`, `serde`, `serde_json`, `rand`, `chrono`, `resvg` (SVG rendering)
 - **Tauri plugins**: `tauri-plugin-dialog`, `tauri-plugin-autostart`
 
 ## Installation
@@ -67,7 +68,7 @@ The installer / executable will be generated in `src-tauri/target/release/`.
 
 ## Usage
 
-1. Click **Browse** to select a folder containing wallpapers (jpg, jpeg, png, bmp, webp).
+1. Click **Browse** to select a folder containing wallpapers (jpg, jpeg, png, bmp, webp, svg).
 2. Choose a rotation interval from the dropdown.
 3. Select **Shuffle** or **Sequential** mode.
 4. Optionally enable **Pause on fullscreen apps** to stop automatic rotations while Windows detects a fullscreen game, video, presentation, or other busy fullscreen activity.
@@ -108,6 +109,7 @@ ShufflePaper/
 │       ├── scheduler.rs  # Background rotation loop
 │       ├── context.rs    # Work / Personal profile selection
 │       ├── fullscreen.rs # Windows fullscreen-state detection
+│       ├── logging.rs    # Persistent log file and panic hook
 │       ├── scanner.rs    # Folder image scanner
 │       ├── settings.rs   # Config load / save
 │       ├── tray.rs       # System tray menu
@@ -120,6 +122,10 @@ ShufflePaper/
 ├── tauri.conf.json
 └── README.md
 ```
+
+## Logs
+
+ShufflePaper writes a log to `%LOCALAPPDATA%\ShufflePaper\logs\shufflepaper.log` (rotated at ~1 MB). It records startup settings, every applied wallpaper, pause/resume transitions, panics, and any failure to apply an image. The **Open log file** button in the status panel opens it. Include the log when reporting a rotation that stopped working.
 
 ## License
 

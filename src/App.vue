@@ -27,6 +27,7 @@ interface AppStatus {
   time_remaining: number;
   can_previous: boolean;
   active_profile: string;
+  last_error: string | null;
 }
 
 const defaults: AppSettings = {
@@ -54,8 +55,10 @@ const status = ref<AppStatus>({
   time_remaining: 0,
   can_previous: false,
   active_profile: "Automatic",
+  last_error: null,
 });
 const isSaving = ref(false);
+const logPath = ref("");
 const effectiveTheme = ref<"light" | "dark">("light");
 const mainElement = ref<HTMLElement | null>(null);
 const activeInfoTip = ref<"fullscreen" | "context" | null>(null);
@@ -157,6 +160,14 @@ async function setForceMode(mode: "Work" | "Personal" | null) {
   }
 }
 
+async function openLogs() {
+  try {
+    logPath.value = await invoke<string>("open_log_file");
+  } catch (error) {
+    console.error("Failed to open log file:", error);
+  }
+}
+
 function hideWindow() {
   invoke("hide_window").catch(console.error);
 }
@@ -241,7 +252,12 @@ const days = ["M", "T", "W", "T", "F", "S", "S"];
           <p class="flex justify-between"><span class="font-medium text-gray-600 dark:text-gray-400">Profile:</span><span>{{ status.active_profile }}</span></p>
           <p class="flex justify-between"><span class="font-medium text-gray-600 dark:text-gray-400">State:</span><span v-if="status.paused_fullscreen" class="text-amber-600 font-medium">Paused (fullscreen)</span><span v-else-if="status.is_paused" class="text-amber-600 font-medium">Paused</span><span v-else class="text-green-600 font-medium">Active</span></p>
         </div>
+        <p v-if="status.last_error" class="flex flex-col gap-0.5 rounded border border-red-300 bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+          <span class="font-semibold uppercase tracking-wider text-[10px]">Last wallpaper error</span>
+          <span class="break-all">{{ status.last_error }}</span>
+        </p>
         <div class="mt-4 flex gap-2"><button @click="previousWallpaper" :disabled="!status.can_previous" class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded border text-sm font-medium disabled:opacity-40 flex items-center justify-center gap-2"><Undo2 class="w-4 h-4" /> Previous</button><button @click="nextWallpaper" class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded border text-sm font-medium flex items-center justify-center gap-2"><Redo2 class="w-4 h-4" /> Skip to Next</button></div>
+        <button @click="openLogs" :title="logPath || 'Open the application log file'" class="mt-2 w-full text-xs text-gray-500 dark:text-gray-400 underline hover:text-blue-600 dark:hover:text-blue-400">Open log file</button>
       </section>
 
       <section class="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">

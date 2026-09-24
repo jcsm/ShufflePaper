@@ -2,6 +2,25 @@
 
 All notable changes to ShufflePaper are documented here.
 
+## [0.4.0] - 2026-09-23
+
+### Added
+
+- **Static SVG wallpaper support** — `.svg` files in the wallpaper folder are now rotated like any other image. They are rasterized to a PNG at the primary screen resolution (cover-fit, centered) and cached under `%LOCALAPPDATA%\ShufflePaper\svg-cache`, keyed by file path and modification time, so each SVG is rendered only once. Embedded CSS styling and `<text>` elements (via system fonts) are supported, as well as `<image>` references to files in the same folder.
+- **Log file** — the app now writes a persistent log to `%LOCALAPPDATA%\ShufflePaper\logs\shufflepaper.log` (rotated at ~1 MB, panic messages included) and the status panel links to it with **Open log file**.
+
+### Fixed
+
+- **Window freezing on wallpaper changes** — applying a wallpaper used to broadcast `WM_SETTINGCHANGE` with a *blocking* system message from whichever thread made the call, and manual changes ran on the UI thread: one busy or unresponsive window (including the app's own webview) could stall that call indefinitely, leaving the app unresponsive and the wallpaper unchanged until it was restarted. The wallpaper is now applied without that broadcast and other windows are notified asynchronously, and every wallpaper change runs on a worker thread instead of the UI thread.
+- **Silent failures** — wallpaper errors, SVG rasterization errors, panics, and pause/resume transitions are now logged and surfaced in the status panel instead of being discarded without a trace.
+- **Rotation no longer stops silently** — a panic in the rotation loop used to kill its thread permanently, and a single poisoned lock made every later operation fail, so only a restart recovered the app. The loop is now panic-tolerant and the shared state recovers from poisoning.
+- **One bad file no longer blocks rotation** — if an image cannot be applied, up to three other candidates are tried before giving up, and a failed tick waits a full interval instead of retrying once per second.
+- **Fullscreen pause is now visible in the log**, so "rotation stopped" can be told apart from a crash.
+
+### Notes
+
+- SVG animations (SMIL) are not supported: the Windows wallpaper API (`SPI_SETDESKWALLPAPER`) only displays static images, so animated SVGs render their initial state. This is a Windows platform limitation.
+
 ## [0.3.0] - 2026-09-13
 
 ### Added
@@ -54,6 +73,7 @@ First release of ShufflePaper: a lightweight, open-source wallpaper rotator for 
 
 Download `shuffle-paper.exe` and run it. No installation required.
 
+[0.4.0]: https://github.com/jcsm/ShufflePaper/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jcsm/ShufflePaper/releases/tag/v0.3.0
 [0.2.0]: https://github.com/jcsm/ShufflePaper/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jcsm/ShufflePaper/releases/tag/v0.1.0

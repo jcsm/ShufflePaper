@@ -3,7 +3,9 @@ use std::fs;
 
 pub fn scan_directories(folder: &str) -> Vec<String> {
     let mut images = Vec::new();
-    let extensions = ["jpg", "jpeg", "png", "bmp", "webp"];
+    // SVG files are accepted too; they are rasterized to a cached PNG at
+    // screen resolution right before being applied (see svg.rs).
+    let extensions = ["jpg", "jpeg", "png", "bmp", "webp", "svg"];
 
     let path = Path::new(folder);
     if !path.exists() || !path.is_dir() {
